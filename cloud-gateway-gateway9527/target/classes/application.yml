@@ -1,0 +1,42 @@
+server:
+  port: 9527
+
+spring:
+  application:
+    name: cloud-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true #开启从注册中心动态创建路由的功能，利用微服务名进行路由
+      routes:
+        - id: payment_routh #payment_route  #路由的ID，没有固定规则但要求唯一，建议配合服务名
+          #uri: http://localhost:8001        #匹配后提供服务的路由地址
+          uri: lb://cloud-payment-service #匹配后提过服务的路由地址
+          predicates:
+            - Path=/payment/get/**        #断言，路径相匹配的进行路由
+
+        - id: payment_routh2 #payment_route  #路由的ID,没有固定规则但要求唯一，建议配合服务器名
+          #uri: http://localhost:8001         #匹配后提供服务的路由地址
+          uri: lb://cloud-payment-service #匹配后提供服务的路由地址
+          filters:
+            - AddRequestParameter=X-Request-Id,1024 # 过滤器工厂会在匹配请求头加上一对请求头，名称为 X-Request-Id 值为 1024
+          predicates:
+            - Path=/payment/lb/**         #断言，路径相匹配的进行路由
+           # - After=2020-04-16T11:14:31.575+08:00[Asia/Shanghai]  #断言，时间匹配进行路由，时间之后
+           # - Before=2020-04-16T12:14:31.575+08:00[Asia/Shanghai]  #断言，时间匹配进行路由，时间之前
+           # - Between=2020-04-16T12:14:31.575+08:00[Asia/Shanghai]  #断言，时间匹配进行路由，时间之间
+           # - Cookie=username,zzyy  #断言，Cookie匹配进行路由【cookie名，正则表达式】
+           # - Header=X-Request-Id,\d+  # 请求头要有 X-Request-Id 属性。并且，值为整数的正则表达式【属性名，正则表达式】
+           # - Host=**.somehost.org,**.anotherhost.org  # 断言，域名列表匹配进行路由，间隔【域名列表：**.atguigu.com】
+           # - Method=Get,Post # 断言，如果请求方法是 GET 或 POST 则进行路由。
+           # - Query=green # 断言，如果请求包含 green 查询参数，则前面的路由匹配。
+
+eureka:
+  instance:
+    hostname: cloud-gateway-service
+  client:
+    service-url: #服务提供者provider注册进eureka服务列表内
+      register-with-eureka: true
+      fetch-registry: true
+      defaultZone: http://eureka7001.com:7001/eureka
